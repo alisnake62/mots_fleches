@@ -1,7 +1,8 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver import Firefox
 from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
+
+from func import find_between
 
 import requests
 import sys
@@ -9,7 +10,7 @@ import datetime
 
 args = sys.argv
 
-input_date = None if len(args) == 1 else args[1]
+input_date = None if len(args) == 1 else args[1] # format ddmmyyyy
 
 input_date = datetime.datetime.strptime(input_date, "%d%m%Y") if input_date is not None else datetime.datetime.today()
 
@@ -20,14 +21,6 @@ display_date = input_date.strftime("%d %B %Y")
 
 options = Options()
 options.headless = False
-
-def find_between( s, first, last ):
-    try:
-        start = s.index( first ) + len( first )
-        end = s.index( last, start )
-        return s[start:end]
-    except ValueError:
-        return ""
 
 game_data_dequest = requests.get(f"https://rcijeux.fr/drupal_game/20minutes/grids/{game_id}.mfj")
 game_data = str(game_data_dequest.content)

@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# My code
+history.json
+
 # Distribution / packaging
 .Python
 build/
