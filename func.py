@@ -1,11 +1,15 @@
-from datetime import date, timedelta
+from datetime import date
 import datetime
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import requests
 from bs4 import BeautifulSoup
+
+options = Options()
+options.headless = True
 
 horoscope_signs = ["belier", "taureau", "gemeaux", "cancer", "lion", "vierge", "balance", "scorpion", "sagittaire", "capricorne", "verseau", "poissons"]
 
@@ -26,8 +30,9 @@ def get_force(game_id):
 
 def get_mots_fleches_html_raw(game_id):
     # Remplacez l'URL par l'adresse de la page web que vous souhaitez extraire
+    
     url = f"https://www.rcijeux.fr/game/20minutes/mfleches?id={game_id}"
-    driver = webdriver.Firefox()
+    driver = webdriver.Firefox(options=options)
 
     driver.get(url)
 
