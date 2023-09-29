@@ -9,6 +9,9 @@ __pycache__/
 # My code
 history.json
 
+# notre journal
+3mn.html
+
 # Distribution / packaging
 .Python
 build/

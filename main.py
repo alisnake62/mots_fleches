@@ -1,10 +1,5 @@
-from selenium.webdriver.common.by import By
-from selenium.webdriver import Firefox
-from selenium.webdriver.firefox.options import Options
+from func import get_mots_fleches_html_raw, get_force, generate_3mn_mf_from_raw, get_horoscope, get_full_3mn
 
-from func import find_between
-
-import requests
 import sys
 import datetime
 
@@ -19,17 +14,15 @@ game_id = formated_date[:4] + formated_date[6:]
 
 display_date = input_date.strftime("%d %B %Y")
 
-options = Options()
-options.headless = False
+force = get_force(game_id)
 
-game_data_dequest = requests.get(f"https://rcijeux.fr/drupal_game/20minutes/grids/{game_id}.mfj")
-game_data = str(game_data_dequest.content)
-force = find_between(game_data, "force:\"", "\",\\r")
+raw_html = get_mots_fleches_html_raw(game_id)
 
-driver = Firefox(options=options)
-driver.get(f"https://rcijeux.fr/game/20minutes/mfleches?id={game_id}")
+mf_3mn = generate_3mn_mf_from_raw(raw_html, force)
 
-title_element = driver.find_element(By.ID, "game-name")
-driver.execute_script(f"document.getElementById('game-name').innerHTML = '{display_date} - Force {force}';")
+horoscope = get_horoscope()
 
-# driver.close()
+full_3mn = get_full_3mn(mf_3mn, horoscope)
+
+with open("3mn.html", "w", encoding="utf-8") as file:
+    file.write(full_3mn)    
