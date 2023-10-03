@@ -75,6 +75,8 @@ def generate_3mn_mf_from_raw(page_source, force):
     <div class="mots-fleches">
         <text>force {force}</text>
         {first_svg}
+        <br/><br/>
+        <em>S'il te reste un peu de temps, n'oublie pas de regarder ton horoscope au verso!</em>
     </div>
     """
 
@@ -112,15 +114,48 @@ def get_horoscope_by_sign(sign):
     
     return ""
 
-def get_horoscope():
-    horoscope = '<div class="horoscope">'
+def get_horoscope(date):
+    horoscope = '<div class="horoscope"><img src="3.png" height="100px" width="100px"><br/><div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr))">'
     for sign in horoscope_signs:
         text = get_horoscope_by_sign(sign)
-        horoscope +=  f'<h3>{sign}</h3>'
-        horoscope += f'<p>{text}</p>'
+        horoscope +=  f'<div><h3>{sign}</h3>'
+        horoscope += f'<p>{text}</p></div>'
 
+    get_daily_strip(date)
+
+    horoscope += '</div><br/> <img src="daily_strip.png"/>'
     horoscope += '</div>'
+
     return horoscope
+
+def get_daily_strip(input_date):
+    url = f'https://www.gocomics.com/pickles/{input_date}'
+
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, 'html.parser')
+
+        strip_element = soup.find('picture', class_='item-comic-image')  
+
+        if strip_element:
+            image_url = strip_element.find('img')['src']
+
+            # Télécharger l'image
+            image_response = requests.get(image_url)
+
+            if image_response.status_code == 200:
+                # Enregistrer l'image localement
+                with open('daily_strip.png', 'wb') as f:
+                    f.write(image_response.content)
+
+                print("Le daily strip a été téléchargé avec succès.")
+            else:
+                print("Impossible de télécharger l'image du daily strip.")
+        else:
+            print("Élément du daily strip non trouvé.")
+    else:
+        print("Impossible de récupérer la page web.")
 
 def get_full_3mn(mots_fleches, horoscope):
     return f"""
@@ -133,12 +168,14 @@ def get_full_3mn(mots_fleches, horoscope):
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        {mots_fleches}
+        {mots_fleches}<br/><br/>
         {horoscope}
     </body>
     </html>
     """
 
+
+    
 
 class DateUtil:
 
