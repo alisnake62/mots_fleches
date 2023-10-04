@@ -1,28 +1,26 @@
-from func import get_mots_fleches_html_raw, get_force, generate_3mn_mf_from_raw, get_horoscope, get_full_3mn
+from func import get_daily_strip, get_full_3mn
 
 import sys
 import datetime
+import argparse
 
 args = sys.argv
 
-input_date = None if len(args) == 1 else args[1] # format ddmmyyyy
+# Créez un objet ArgumentParser
+parser = argparse.ArgumentParser(description="Description de votre script")
 
-input_date = datetime.datetime.strptime(input_date, "%d%m%Y") if input_date is not None else datetime.datetime.today()
-second_input_date = datetime.datetime.now().strftime("%Y/%m/%d")
-formated_date = input_date.strftime("%d%m%Y")
-game_id = formated_date[:4] + formated_date[6:]
+# Ajoutez des arguments en spécifiant leurs noms et des valeurs par défaut
+parser.add_argument('--date_mots_fleches', type=str, default=datetime.datetime.today().strftime("%d%m%Y"), help="date au format ddmmyyyy")
+parser.add_argument('--date_comic', type=str, default=datetime.datetime.today().strftime("%d%m%Y"), help="date au format ddmmyyyy")
+parser.add_argument('--pic_path', type=str, default='', help="chemin de la photo centrale des mots fleches")
+parser.add_argument('--comics', nargs='+', default='', help="list des comics à afficher")
 
-display_date = input_date.strftime("%d %B %Y")
+args = parser.parse_args()
 
-force = get_force(game_id)
+for i in args.comics:
+    get_daily_strip(args.date_comic, i)
 
-raw_html = get_mots_fleches_html_raw(game_id)
-
-mf_3mn = generate_3mn_mf_from_raw(raw_html, force)
-
-horoscope = get_horoscope(second_input_date)
-
-full_3mn = get_full_3mn(mf_3mn, horoscope)
+full_3mn = get_full_3mn(args.date_mots_fleches, args.comics, args.pic_path)
 
 with open("3mn.html", "w", encoding="utf-8") as file:
     file.write(full_3mn)    

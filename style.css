@@ -1,8 +1,17 @@
- .mots-fleches, .horoscope {
+.images {
+    margin-top: 50px;
+}
+
+.page {
     height: 100vh; /* Chaque élément prend 100% de la hauteur de la fenêtre */
     background-color: #f0f0f0; /* Couleur de fond pour visualisation */
     page-break-after: always; /* Force un saut de page avant chaque élément */
 }
+
+/*  /*  /*  /*  /*  /*  /*
+/*  /*  /*  /*  /*  /*  /*
+/* Styles de 20mn */
+
 
  .svg-class {
      width: "1200px";

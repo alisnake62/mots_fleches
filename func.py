@@ -21,6 +21,12 @@ def find_between( s, first, last ):
     except ValueError:
         return ""
 
+def get_game_id(input_date):
+    input_date_mots_fleches = datetime.datetime.strptime(input_date, "%d%m%Y") 
+    formated_date_mots_fleches = input_date_mots_fleches.strftime("%d%m%Y")
+    return formated_date_mots_fleches[:4] + formated_date_mots_fleches[6:]
+
+
 def get_force(game_id):
     game_data_request = requests.get(f"https://rcijeux.fr/drupal_game/20minutes/grids/{game_id}.mfj")
     game_data = str(game_data_request.content)
@@ -48,23 +54,27 @@ def get_mots_fleches_html_raw(game_id):
 
     return page_source
 
-def replace_images(soup):
+def replace_images(soup, image1="3.png", image2="3.png"):
     # Trouvez tous les éléments <image> dans le SVG
     images = soup.find_all("image")
 
     for i in range(len(images)):
+        if(i == 0):
+            image = images[i]
+            image['xlink:href'] = image1
+
         if(i == 1):
             image = images[i]
-            image['xlink:href'] = '3.png'
+            image['xlink:href'] = image2
             
 
     return soup
 
-def generate_3mn_mf_from_raw(page_source, force):
+def generate_3mn_mf_from_raw(page_source, force, pic_path="3.png"):
     # Utiliser BeautifulSoup pour analyser le HTML de la page
     soup = BeautifulSoup(page_source, "html.parser")
 
-    soup = replace_images(soup)
+    soup = replace_images(soup, pic_path)
     first_svg = soup.find("svg")
 
     if first_svg.get("height"):
@@ -73,15 +83,13 @@ def generate_3mn_mf_from_raw(page_source, force):
     if first_svg.get("width"):
         del first_svg["width"]
 
-    first_svg["height"] = "97vh"
 
     # Créez une nouvelle page HTML avec le SVG inclus
     return f"""
-    <div class="mots-fleches">
+    <div>
         <text>force {force}</text>
         {first_svg}
         <br/><br/>
-        <em>S'il te reste un peu de temps, n'oublie pas de regarder ton horoscope au verso!</em>
     </div>
     """
 
@@ -119,22 +127,22 @@ def get_horoscope_by_sign(sign):
     
     return ""
 
-def get_horoscope(date):
-    horoscope = '<div class="horoscope"><img src="3.png" height="100px" width="100px"><br/><div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr))">'
+def get_horoscope():
+    horoscope = '<div class="horoscope" style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr))">'
     for sign in horoscope_signs:
         text = get_horoscope_by_sign(sign)
         horoscope +=  f'<div><h3>{sign}</h3>'
         horoscope += f'<p>{text}</p></div>'
 
-    get_daily_strip(date)
-
-    horoscope += '</div><br/> <img src="daily_strip.png"/>'
     horoscope += '</div>'
 
     return horoscope
 
-def get_daily_strip(input_date):
-    url = f'https://www.gocomics.com/pickles/{input_date}'
+def get_daily_strip(input_date, comic):
+    date = datetime.datetime.strptime(input_date, "%d%m%Y") 
+    formatted_date = date.strftime("%Y/%m/%d")
+
+    url = f'https://www.gocomics.com/{comic}/{formatted_date}'
 
     response = requests.get(url)
 
@@ -151,7 +159,7 @@ def get_daily_strip(input_date):
 
             if image_response.status_code == 200:
                 # Enregistrer l'image localement
-                with open('daily_strip.png', 'wb') as f:
+                with open(f'{comic}.png', 'wb') as f:
                     f.write(image_response.content)
 
                 print("Le daily strip a été téléchargé avec succès.")
@@ -162,7 +170,23 @@ def get_daily_strip(input_date):
     else:
         print("Impossible de récupérer la page web.")
 
-def get_full_3mn(mots_fleches, horoscope):
+def get_full_3mn(date_mots_fleches, image_list=[], pic_path='3.png'):
+
+    #mots fleches
+    mots_fleches_id = get_game_id(date_mots_fleches)
+    force = get_force(mots_fleches_id)
+    mf_raw_html = get_mots_fleches_html_raw(mots_fleches_id)
+    mf_3mn = generate_3mn_mf_from_raw(mf_raw_html, force, pic_path)
+
+    #horoscope
+    horoscope = get_horoscope()
+
+    #comics
+    images = ""
+    for i in image_list:
+        images += f'<img class="images" src="{i}.png"/>'
+
+    # journal complet
     return f"""
     <!DOCTYPE html>
     <html lang="fr">
@@ -173,14 +197,18 @@ def get_full_3mn(mots_fleches, horoscope):
         <link rel="stylesheet" href="style.css">
     </head>
     <body>
-        {mots_fleches}<br/><br/>
-        {horoscope}
+        <div class="page">
+            {mf_3mn}
+            <em>S'il te reste un peu de temps, n'oublie pas de regarder ton horoscope au verso!</em>
+        </div>
+        <div class="page">
+            <img src="3.png" height="100px" width="100px">
+            {horoscope}
+            {images}
+        </div>
     </body>
     </html>
     """
-
-
-    
 
 class DateUtil:
 
