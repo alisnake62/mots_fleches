@@ -11,7 +11,8 @@ history.json
 
 # notre journal
 3mn.html
-daily_strip.png
+*.png
+*.jpg
 
 # Distribution / packaging
 .Python
