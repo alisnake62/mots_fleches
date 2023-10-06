@@ -1,15 +1,18 @@
 from datetime import date
 import datetime
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import requests
 from bs4 import BeautifulSoup
+import locale
 
-options = Options()
-options.headless = True
+logo_path = '3.png'
+
+options = FirefoxOptions()
+options.add_argument("--headless")
 
 horoscope_signs = ["belier", "taureau", "gemeaux", "cancer", "lion", "vierge", "balance", "scorpion", "sagittaire", "capricorne", "verseau", "poissons"]
 
@@ -54,7 +57,7 @@ def get_mots_fleches_html_raw(game_id):
 
     return page_source
 
-def replace_images(soup, image1="3.png", image2="3.png"):
+def replace_images(soup, image1=logo_path, image2=logo_path):
     # Trouvez tous les éléments <image> dans le SVG
     images = soup.find_all("image")
 
@@ -70,7 +73,7 @@ def replace_images(soup, image1="3.png", image2="3.png"):
 
     return soup
 
-def generate_3mn_mf_from_raw(page_source, force, pic_path="3.png"):
+def generate_3mn_mf_from_raw(page_source, force, pic_path=logo_path):
     # Utiliser BeautifulSoup pour analyser le HTML de la page
     soup = BeautifulSoup(page_source, "html.parser")
 
@@ -159,7 +162,7 @@ def get_daily_strip(input_date, comic):
 
             if image_response.status_code == 200:
                 # Enregistrer l'image localement
-                with open(f'{comic}.png', 'wb') as f:
+                with open(f'html/{comic}.png', 'wb') as f:
                     f.write(image_response.content)
 
                 print("Le daily strip a été téléchargé avec succès.")
@@ -170,7 +173,11 @@ def get_daily_strip(input_date, comic):
     else:
         print("Impossible de récupérer la page web.")
 
-def get_full_3mn(date_mots_fleches, image_list=[], pic_path='3.png'):
+def get_full_3mn(date_mots_fleches, image_list=[], pic_path= logo_path):
+    
+    #date
+    locale.setlocale(locale.LC_TIME,'')
+    date_str = datetime.datetime.strptime(date_mots_fleches, "%d%m%Y").strftime("%d %B %Y")
 
     #mots fleches
     mots_fleches_id = get_game_id(date_mots_fleches)
@@ -198,11 +205,12 @@ def get_full_3mn(date_mots_fleches, image_list=[], pic_path='3.png'):
     </head>
     <body>
         <div class="page">
+            <em>3mn - Edition du {date_str} - Tirage : 1<em>
             {mf_3mn}
             <em>S'il te reste un peu de temps, n'oublie pas de regarder ton horoscope au verso!</em>
         </div>
         <div class="page">
-            <img src="3.png" height="100px" width="100px">
+            <img src={logo_path} height="100px" width="100px">
             {horoscope}
             {images}
         </div>
