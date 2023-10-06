@@ -22,5 +22,5 @@ for i in args.comics:
 
 full_3mn = get_full_3mn(args.date_mots_fleches, args.comics, args.pic_path)
 
-with open("3mn.html", "w", encoding="utf-8") as file:
+with open("html/index.html", "w", encoding="utf-8") as file:
     file.write(full_3mn)    

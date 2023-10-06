@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+
+  3min_python:
+    build:
+      context: .
+    container_name: 3min_python
+    command: "poetry run python main.py"
+    restart: always
+    environment:
+      APP_PATH: /usr/src/app/
+      APP_ENV: docker
+      APP_MODE: normal
+    volumes:
+      - .:/usr/src/app
+
+  3min_nginx:
+    image: nginx:latest
+    container_name: 3min_nginx
+    ports:
+      - "8888:80"
+    volumes:
+      - ${path}/mots_fleches/html:/usr/share/nginx/html
+
+volumes:
+  data:

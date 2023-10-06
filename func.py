@@ -1,15 +1,15 @@
 from datetime import date
 import datetime
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
+from selenium.webdriver import FirefoxOptions
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import requests
 from bs4 import BeautifulSoup
 
-options = Options()
-options.headless = True
+options = FirefoxOptions()
+options.add_argument("--headless")
 
 horoscope_signs = ["belier", "taureau", "gemeaux", "cancer", "lion", "vierge", "balance", "scorpion", "sagittaire", "capricorne", "verseau", "poissons"]
 
