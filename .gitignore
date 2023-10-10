@@ -11,10 +11,6 @@ history.json
 
 # notre journal
 index.html
-3mn.html
-*.png
-*.jpg
-*.jpeg
 
 # Distribution / packaging
 .Python
