@@ -1,3 +1,6 @@
+body {
+    font-family: 'Helvetica'
+}
 .images {
     margin-top: 50px;
 }
@@ -137,11 +140,6 @@
      fill: #00c;
  }
 
- .cell__definition--highlight .cell__definition--background {
-     stroke: #e20015;
-     fill: #e20015;
- }
-
  .cell__definition--concours.cell__definition--highlight .cell__definition--background {
      stroke: #f0f;
      fill: #f0f;
@@ -158,52 +156,12 @@
      stroke-width: 1;
  }
 
- .cell__definition--highlight .cell__definition__arrow {
-     fill: #000;
- }
-
  .cell__definition__text tspan {
      font-weight: normal;
      fill: #fff;
      font-size: 18px;
      line-height: 1.2em;
      cursor: pointer;
- }
-
- .cell-letter.cell--highlight rect {
-     cursor: default;
-     fill: #CFF;
-     fill-opacity: 1;
- }
-
-
- .cell-letter.cell--cursor rect {
-     cursor: default;
-     stroke: #999999;
-     stroke-opacity: 1.00;
-     stroke-width: 1.00;
-     fill-opacity: 1.0;
-     fill: #3ef2fe;
-     -webkit-animation-duration: 0.5s;
-     -moz-animation-duration: 0.5s;
-     -o-animation-duration: 0.5s;
-     animation-duration: 0.5s;
-     -webkit-animation-iteration-count: infinite;
-     -moz-animation-iteration-count: infinite;
-     -o-animation-iteration-count: infinite;
-     animation-iteration-count: infinite;
-     -webkit-animation-timing-function: ease-in-out;
-     -moz-animation-timing-function: ease-in-out;
-     -o-animation-timing-function: ease-in-out;
-     animation-timing-function: ease-in-out;
-     -webkit-animation-direction: alternate;
-     -moz-animation-direction: alternate;
-     -o-animation-direction: alternate;
-     animation-direction: alternate;
-     -webkit-animation-name: glow-blue;
-     -moz-animation-name: glow-blue;
-     -o-animation-name: glow-blue;
-     animation-name: glow-blue;
  }
 
  .cell-letter.cell--initial text {
@@ -1736,14 +1694,6 @@
  .def__def--theme {
      font-weight: bold;
      font-style: italic;
- }
-
- .def__def--findable.active {
-     color: #20a9e1;
- }
-
- .def__def--finalized.active {
-     color: #999;
  }
 
  .desktop .def-switches,
