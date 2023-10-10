@@ -7,17 +7,18 @@ services:
       context: .
     container_name: 3min_python
     command: "poetry run python main.py"
-    restart: always
     environment:
       APP_PATH: /usr/src/app/
       APP_ENV: docker
       APP_MODE: normal
+      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}
     volumes:
       - .:/usr/src/app
 
   3min_nginx:
     image: nginx:latest
     container_name: 3min_nginx
+    restart: always
     ports:
       - "8888:80"
     volumes:
