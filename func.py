@@ -8,6 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import requests
 from bs4 import BeautifulSoup
 import locale
+import os
 
 logo_path = '3.png'
 
@@ -173,6 +174,31 @@ def get_daily_strip(input_date, comic):
     else:
         print("Impossible de récupérer la page web.")
 
+def get_central_picture():
+
+    nextcloud_password = os.getenv('NEXTCLOUD_ADMIN_PASSWORD', "toto")
+    nextcloud_url = "http://monappli.ovh:8889"
+    nextcloud_username = "admin"
+    file_name = "default.png"
+    file_path = f"/3min_photos/{file_name}"
+    download_url = f"{nextcloud_url}/remote.php/dav/files/{nextcloud_username}{file_path}"
+
+    # Définissez les en-têtes d'authentification pour Nextcloud
+    auth = (nextcloud_username, nextcloud_password)
+
+    # Effectuez la demande HTTP pour télécharger le fichier
+    try:
+        response = requests.get(download_url, auth=auth)
+        if response.status_code == 200:
+            # Enregistrez le contenu du fichier téléchargé localement
+            with open("html/central.png", "wb") as central_picture_file:
+                central_picture_file.write(response.content)
+            print(f"Le fichier {file_name} a été téléchargé avec succès.")
+        else:
+            print(f"Échec du téléchargement du fichier. Code HTTP : {response.status_code}")
+    except:
+        print(f"Échec du téléchargement du fichier")
+
 def get_full_3mn(date_mots_fleches, image_list=[], pic_path= logo_path):
     
     #date
@@ -184,6 +210,9 @@ def get_full_3mn(date_mots_fleches, image_list=[], pic_path= logo_path):
     force = get_force(mots_fleches_id)
     mf_raw_html = get_mots_fleches_html_raw(mots_fleches_id)
     mf_3mn = generate_3mn_mf_from_raw(mf_raw_html, force, pic_path)
+
+    # get centra picture
+    get_central_picture()
 
     #horoscope
     horoscope = get_horoscope()
