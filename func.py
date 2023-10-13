@@ -17,6 +17,11 @@ options.add_argument("--headless")
 
 horoscope_signs = ["belier", "taureau", "gemeaux", "cancer", "lion", "vierge", "balance", "scorpion", "sagittaire", "capricorne", "verseau", "poissons"]
 
+horoscope_path = "html/horoscope.html"
+game_data_path = "html/game_data.html"
+mots_fleches_path = "html/mots_fleches.html"
+central_path = "html/central.png"
+
 def find_between( s, first, last ):
     try:
         start = s.index( first ) + len( first )
@@ -31,11 +36,15 @@ def get_game_id(input_date):
     return formated_date_mots_fleches[:4] + formated_date_mots_fleches[6:]
 
 
-def get_force(game_id):
+def get_game_data(game_id):
     game_data_request = requests.get(f"https://rcijeux.fr/drupal_game/20minutes/grids/{game_id}.mfj")
     game_data = str(game_data_request.content)
-    force = find_between(game_data, "force:\"", "\",\\r")
+    
+    with open(game_data_path, 'w', encoding='utf-8') as fichier_sortie:
+        fichier_sortie.write(game_data)
 
+def get_force(game_data):
+    force = find_between(game_data, "force:\"", "\",\\r")
     return force
 
 def get_mots_fleches_html_raw(game_id):
@@ -56,7 +65,8 @@ def get_mots_fleches_html_raw(game_id):
     # Fermer le navigateur
     driver.quit()
 
-    return page_source
+    with open(mots_fleches_path, 'w', encoding='utf-8') as fichier_sortie:
+        fichier_sortie.write(page_source)
 
 def replace_images(soup, image1=logo_path, image2=logo_path):
     # Trouvez tous les éléments <image> dans le SVG
@@ -89,13 +99,15 @@ def generate_3mn_mf_from_raw(page_source, force, pic_path=logo_path):
 
 
     # Créez une nouvelle page HTML avec le SVG inclus
-    return f"""
+    mots_fleches =  f"""
     <div>
         <text>force {force}</text>
         {first_svg}
         <br/><br/>
     </div>
     """
+
+    return mots_fleches
 
 def get_horoscope_by_sign(sign):
     url = f"https://www.20minutes.fr/horoscope/horoscope-{sign}"
@@ -140,7 +152,8 @@ def get_horoscope():
 
     horoscope += '</div>'
 
-    return horoscope
+    with open(horoscope_path, 'w', encoding='utf-8') as fichier_sortie:
+        fichier_sortie.write(horoscope)
 
 def get_daily_strip(input_date, comic):
     date = datetime.datetime.strptime(input_date, "%d%m%Y") 
@@ -191,7 +204,7 @@ def get_central_picture():
         response = requests.get(download_url, auth=auth)
         if response.status_code == 200:
             # Enregistrez le contenu du fichier téléchargé localement
-            with open("html/central.png", "wb") as central_picture_file:
+            with open(central_path, "wb") as central_picture_file:
                 central_picture_file.write(response.content)
             print(f"Le fichier {file_name} a été téléchargé avec succès.")
         else:
@@ -199,27 +212,56 @@ def get_central_picture():
     except:
         print(f"Échec du téléchargement du fichier")
 
-def get_full_3mn(date_mots_fleches, image_list=[], pic_path= logo_path):
+def get_full_3mn(date_mots_fleches, date_comics, comics=[], pic_path=None, refresh=False):
     
     #date
-    locale.setlocale(locale.LC_TIME,'')
+    locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
     date_str = datetime.datetime.strptime(date_mots_fleches, "%d%m%Y").strftime("%d %B %Y")
 
-    #mots fleches
-    mots_fleches_id = get_game_id(date_mots_fleches)
-    force = get_force(mots_fleches_id)
-    mf_raw_html = get_mots_fleches_html_raw(mots_fleches_id)
-    mf_3mn = generate_3mn_mf_from_raw(mf_raw_html, force, pic_path)
+    # verifier qu'on a bien les contenus exterieurs
+    fichiers_a_verifier = [horoscope_path, mots_fleches_path]
+    for comic in comics:
+        fichiers_a_verifier.append(f'html/{comic}.png')
 
-    # get centra picture
-    get_central_picture()
+    for fichier in fichiers_a_verifier:
+        if not os.path.exists(fichier):
+            refresh = True
 
-    #horoscope
-    horoscope = get_horoscope()
+    # recuperer le contenu exterieur si il y a besoin
+    if refresh:
+        #mots fleches
+        mots_fleches_id = get_game_id(date_mots_fleches)
+        get_game_data(mots_fleches_id)
+        get_mots_fleches_html_raw(mots_fleches_id)
 
-    #comics
+        #horoscope
+        get_horoscope()
+
+        #comics
+        for i in comics:
+            get_daily_strip(date_comics, i)
+
+
+    # get centraL picture
+    if (pic_path is None):
+        get_central_picture()
+        pic_path = 'central.png'
+
+    with open(horoscope_path, 'r', encoding='utf-8') as fichier:
+        horoscope = fichier.read()
+
+    with open(game_data_path, 'r', encoding='utf-8') as fichier:
+        game_data = fichier.read()
+        force = get_force(game_data)
+
+    with open(mots_fleches_path, 'r', encoding='utf-8') as fichier:
+        mots_fleches_raw = fichier.read()
+    
+    mots_fleches = generate_3mn_mf_from_raw(mots_fleches_raw, force, pic_path)
+
+
     images = ""
-    for i in image_list:
+    for i in comics:
         images += f'<img class="images" src="{i}.png"/>'
 
     # journal complet
@@ -235,7 +277,7 @@ def get_full_3mn(date_mots_fleches, image_list=[], pic_path= logo_path):
     <body>
         <div class="page">
             <em>3mn - Edition du {date_str} - Tirage : 1<em>
-            {mf_3mn}
+            {mots_fleches}
             <em>S'il te reste un peu de temps, n'oublie pas de regarder ton horoscope au verso!</em>
         </div>
         <div class="page">

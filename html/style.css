@@ -3,10 +3,12 @@ body {
 }
 .images {
     margin-top: 50px;
+    max-width: 95vw;
 }
 
 .page {
-    height: 100vh; /* Chaque élément prend 100% de la hauteur de la fenêtre */
+    width:95vw;
+    height: calc(1,41 * 100vw);
     background-color: #f0f0f0; /* Couleur de fond pour visualisation */
     page-break-after: always; /* Force un saut de page avant chaque élément */
 }
@@ -17,8 +19,6 @@ body {
 
 
  .svg-class {
-     width: "1200px";
-     height: "100vh";
      data-width: "12px";
      data-height: "15"
          shape-rendering="geometric-precision"
