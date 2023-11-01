@@ -70,7 +70,7 @@ def replace_images(soup, image1=logo_path, image2=logo_path):
         if(i == 1):
             image = images[i]
             image['xlink:href'] = image2
-            
+
 
     return soup
 
@@ -174,28 +174,32 @@ def get_daily_strip(input_date, comic):
     else:
         print("Impossible de récupérer la page web.")
 
-def get_central_picture():
+def get_central_picture(mots_fleches_id):
 
     nextcloud_password = os.getenv('NEXTCLOUD_ADMIN_PASSWORD', "toto")
-    nextcloud_url = "http://monappli.ovh:8889"
+    nextcloud_host = "http://monappli.ovh:8889"
     nextcloud_username = "admin"
-    file_name = "default.png"
-    file_path = f"/3min_photos/{file_name}"
-    download_url = f"{nextcloud_url}/remote.php/dav/files/{nextcloud_username}{file_path}"
+    nextcloud_url = f"{nextcloud_host}/remote.php/dav/files/{nextcloud_username}"
 
     # Définissez les en-têtes d'authentification pour Nextcloud
     auth = (nextcloud_username, nextcloud_password)
 
     # Effectuez la demande HTTP pour télécharger le fichier
     try:
-        response = requests.get(download_url, auth=auth)
-        if response.status_code == 200:
-            # Enregistrez le contenu du fichier téléchargé localement
-            with open("html/central.png", "wb") as central_picture_file:
-                central_picture_file.write(response.content)
-            print(f"Le fichier {file_name} a été téléchargé avec succès.")
-        else:
-            print(f"Échec du téléchargement du fichier. Code HTTP : {response.status_code}")
+        is_downloaded = False
+        for extension in ["png", "jpg", "PNG", "JPG"]:
+            file_name = f"{mots_fleches_id}.{extension}"
+            download_url = f"{nextcloud_url}/3min_photos/{file_name}"
+            response = requests.get(download_url, auth=auth)
+            if response.status_code == 200:
+                # Enregistrez le contenu du fichier téléchargé localement
+                with open("html/central.png", "wb") as central_picture_file:
+                    central_picture_file.write(response.content)
+                is_downloaded = True
+                print(f"Le fichier {file_name} a été téléchargé avec succès.")
+                break
+        if not is_downloaded:
+            raise Exception()
     except:
         print(f"Échec du téléchargement du fichier")
 
@@ -212,7 +216,7 @@ def get_full_3mn(date_mots_fleches, image_list=[], pic_path= logo_path):
     mf_3mn = generate_3mn_mf_from_raw(mf_raw_html, force, pic_path)
 
     # get centra picture
-    get_central_picture()
+    get_central_picture(mots_fleches_id)
 
     #horoscope
     horoscope = get_horoscope()
@@ -246,12 +250,3 @@ def get_full_3mn(date_mots_fleches, image_list=[], pic_path= logo_path):
     </body>
     </html>
     """
-
-class DateUtil:
-
-    first_20_minutes_date = date(year=2021, month=1, day=1)
-
-    def get_20_minutes_dates(self):
-        start = self.first_20_minutes_date
-        end = date.today()
-        return [start + datetime.timedelta(days=x) for x in range(0, (end-start).days)]
