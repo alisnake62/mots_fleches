@@ -201,6 +201,8 @@ def get_central_picture(mots_fleches_id):
                     is_downloaded = True
                     print(f"Le fichier {file_name} a été téléchargé avec succès.")
                     break
+            if is_downloaded:
+                break
         if not is_downloaded:
             raise Exception()
     except:
