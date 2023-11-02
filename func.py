@@ -184,20 +184,23 @@ def get_central_picture(mots_fleches_id):
     # Définissez les en-têtes d'authentification pour Nextcloud
     auth = (nextcloud_username, nextcloud_password)
 
+    extensions = ["png", "jpg", "PNG", "JPG"]
+
     # Effectuez la demande HTTP pour télécharger le fichier
     try:
         is_downloaded = False
-        for extension in ["png", "jpg", "PNG", "JPG"]:
-            file_name = f"{mots_fleches_id}.{extension}"
-            download_url = f"{nextcloud_url}/3min_photos/{file_name}"
-            response = requests.get(download_url, auth=auth)
-            if response.status_code == 200:
-                # Enregistrez le contenu du fichier téléchargé localement
-                with open("html/central.png", "wb") as central_picture_file:
-                    central_picture_file.write(response.content)
-                is_downloaded = True
-                print(f"Le fichier {file_name} a été téléchargé avec succès.")
-                break
+        for file_title in [mots_fleches_id, "default"]:
+            for extension in extensions:
+                file_name = f"{file_title}.{extension}"
+                download_url = f"{nextcloud_url}/3min_photos/{file_name}"
+                response = requests.get(download_url, auth=auth)
+                if response.status_code == 200:
+                    # Enregistrez le contenu du fichier téléchargé localement
+                    with open("html/central.png", "wb") as central_picture_file:
+                        central_picture_file.write(response.content)
+                    is_downloaded = True
+                    print(f"Le fichier {file_name} a été téléchargé avec succès.")
+                    break
         if not is_downloaded:
             raise Exception()
     except:
