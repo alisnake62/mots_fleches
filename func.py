@@ -166,7 +166,7 @@ def get_daily_strip(input_date, comic):
                 with open(f'html/{comic}.png', 'wb') as f:
                     f.write(image_response.content)
 
-                print("Le daily strip a été téléchargé avec succès.")
+                print(f"Le daily strip '{comic}' a été téléchargé avec succès.")
             else:
                 print("Impossible de télécharger l'image du daily strip.")
         else:
@@ -193,6 +193,7 @@ def get_central_picture(mots_fleches_id):
             for extension in extensions:
                 file_name = f"{file_title}.{extension}"
                 download_url = f"{nextcloud_url}/3min_photos/{file_name}"
+                print(f"Essai de téléprendre '{file_name}'")
                 response = requests.get(download_url, auth=auth)
                 if response.status_code == 200:
                     # Enregistrez le contenu du fichier téléchargé localement
@@ -208,20 +209,16 @@ def get_central_picture(mots_fleches_id):
     except:
         print(f"Échec du téléchargement du fichier")
 
-def get_full_3mn(date_mots_fleches, image_list=[], pic_path= logo_path):
-    
+def get_full_3mn(mots_fleches_id, image_list=[], pic_path= logo_path):
+
     #date
     locale.setlocale(locale.LC_TIME,'')
-    date_str = datetime.datetime.strptime(date_mots_fleches, "%d%m%Y").strftime("%d %B %Y")
+    date_str = datetime.datetime.strptime(mots_fleches_id, "%d%m%y").strftime("%d %B %Y")
 
     #mots fleches
-    mots_fleches_id = get_game_id(date_mots_fleches)
     force = get_force(mots_fleches_id)
     mf_raw_html = get_mots_fleches_html_raw(mots_fleches_id)
     mf_3mn = generate_3mn_mf_from_raw(mf_raw_html, force, pic_path)
-
-    # get centra picture
-    get_central_picture(mots_fleches_id)
 
     #horoscope
     horoscope = get_horoscope()
