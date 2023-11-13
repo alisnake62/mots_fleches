@@ -1,8 +1,9 @@
-from func import get_daily_strip, get_full_3mn
+from func import get_daily_strip, get_full_3mn, get_central_picture, get_game_id
 
 import sys
 import datetime
 import argparse
+import os
 
 args = sys.argv
 
@@ -17,10 +18,18 @@ parser.add_argument('--comics', nargs='+', default=['pickles', 'crabgrass'], hel
 
 args = parser.parse_args()
 
-for i in args.comics:
-    get_daily_strip(args.date_comic, i)
+mots_fleches_id = get_game_id(args.date_mots_fleches)
 
-full_3mn = get_full_3mn(args.date_mots_fleches, args.comics, args.pic_path)
+# get central picture
+get_central_picture(mots_fleches_id)
 
-with open("html/index.html", "w", encoding="utf-8") as file:
-    file.write(full_3mn)    
+central_picture_only = os.getenv("CENTRAL_PICTURE_ONLY", "0")
+if central_picture_only != '1':
+
+    for i in args.comics:
+        get_daily_strip(args.date_comic, i)
+
+    full_3mn = get_full_3mn(mots_fleches_id, args.comics, args.pic_path)
+
+    with open("html/index.html", "w", encoding="utf-8") as file:
+        file.write(full_3mn)
