@@ -15,7 +15,7 @@ logo_path = '3.png'
 options = FirefoxOptions()
 options.add_argument("--headless")
 
-horoscope_signs = ["belier", "taureau", "gemeaux", "cancer", "lion", "vierge", "balance", "scorpion", "sagittaire", "capricorne", "verseau", "poissons"]
+horoscope_signs = ["Belier", "Taureau", "Gemeaux", "Cancer", "Lion", "Vierge", "Balance", "Scorpion", "Sagittaire", "Capricorne", "Verseau", "Poissons"]
 
 def find_between( s, first, last ):
     try:
@@ -98,7 +98,7 @@ def generate_3mn_mf_from_raw(page_source, force, pic_path=logo_path):
     """
 
 def get_horoscope_by_sign(sign):
-    url = f"https://www.20minutes.fr/horoscope/horoscope-{sign}"
+    url = f"https://www.elle.fr/Astro/Horoscope/Quotidien/{sign}"
 
     # Envoyez une requête GET pour récupérer le contenu HTML de la page
     response = requests.get(url)
@@ -111,21 +111,20 @@ def get_horoscope_by_sign(sign):
         # Créez un objet BeautifulSoup
         soup = BeautifulSoup(html, 'html.parser')
         
-        # Trouvez le h3 avec la classe "heading-xs@xs" contenant le texte "Humeur"
-        h3_element = soup.find('h3', class_='heading-xs@xs', text='Humeur')
+        h2_element = soup.find('h2', text=lambda t: t and 'Amour' in t.strip())
         
         # Trouvez le paragraphe voisin du h3
-        if h3_element:
-            paragraph_element = h3_element.find_next('p', class_='text-m@xs')
+        if h2_element:
+            paragraph_element = h2_element.find_next('p')
             
             # Récupérez le texte du paragraphe
             if paragraph_element:
                 texte = paragraph_element.text
                 return texte
             else:
-                print("Aucun paragraphe trouvé à côté du h3.")
+                print("Aucun paragraphe trouvé à côté du h2.")
         else:
-            print("Aucun h3 trouvé avec le texte 'Humeur'.")
+            print("Aucun h2 trouvé avec le texte 'Amour'.")
     else:
         print("La requête GET a échoué avec le code de statut :", response.status_code)
     
