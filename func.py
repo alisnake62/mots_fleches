@@ -173,7 +173,7 @@ def get_daily_strip(input_date, comic):
     else:
         print("Impossible de récupérer la page web.")
 
-def get_central_picture(mots_fleches_id):
+def teleprendre_image(date, folder, filename):
 
     nextcloud_password = os.getenv('NEXTCLOUD_ADMIN_PASSWORD', "toto")
     nextcloud_host = "http://monappli.ovh:8889"
@@ -188,16 +188,17 @@ def get_central_picture(mots_fleches_id):
     # Effectuez la demande HTTP pour télécharger le fichier
     try:
         is_downloaded = False
-        for file_title in [mots_fleches_id, "default"]:
+        for file_title in [date, "default"]:
             for extension in extensions:
                 file_name = f"{file_title}.{extension}"
-                download_url = f"{nextcloud_url}/3min_photos/{file_name}"
+                download_url = f"{nextcloud_url}/{folder}/{file_name}"
+
                 print(f"Essai de téléprendre '{file_name}'")
                 response = requests.get(download_url, auth=auth)
                 if response.status_code == 200:
                     # Enregistrez le contenu du fichier téléchargé localement
-                    with open("html/central.png", "wb") as central_picture_file:
-                        central_picture_file.write(response.content)
+                    with open(f"html/{filename}.png", "wb") as f:
+                        f.write(response.content)
                     is_downloaded = True
                     print(f"Le fichier {file_name} a été téléchargé avec succès.")
                     break
@@ -208,7 +209,14 @@ def get_central_picture(mots_fleches_id):
     except:
         print(f"Échec du téléchargement du fichier")
 
-def get_full_3mn(mots_fleches_id, image_list=[], pic_path= logo_path):
+def get_central_picture(mots_fleches_id):
+    teleprendre_image(mots_fleches_id, "3min_photos", "central")
+
+
+def get_verso_picture(mots_fleches_id):
+    teleprendre_image(mots_fleches_id, "3min_photos_verso", "verso")
+
+def get_full_3mn(mots_fleches_id, pic_path= logo_path, pic_path_verso= "", comic_list=[]):
 
     #date
     locale.setlocale(locale.LC_TIME,'')
@@ -222,10 +230,13 @@ def get_full_3mn(mots_fleches_id, image_list=[], pic_path= logo_path):
     #horoscope
     horoscope = get_horoscope()
 
+    #verso
+    verso = f'<img class="images" src="verso.png"/>'
+
     #comics
-    images = ""
-    for i in image_list:
-        images += f'<img class="images" src="{i}.png"/>'
+    comics = ""
+    for i in comic_list:
+        comics += f'<img class="images" src="{i}.png"/>'
 
     # journal complet
     return f"""
@@ -246,7 +257,8 @@ def get_full_3mn(mots_fleches_id, image_list=[], pic_path= logo_path):
         <div class="page">
             <img src={logo_path} height="100px" width="100px">
             {horoscope}
-            {images}
+            {verso}
+            {comics}
         </div>
     </body>
     </html>
