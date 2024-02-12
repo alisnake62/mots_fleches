@@ -10,6 +10,8 @@ from bs4 import BeautifulSoup
 import locale
 import os
 from openai import OpenAI
+import traceback
+import sys
 
 logo_path = 'static/3.png'
 
@@ -161,8 +163,8 @@ def get_horoscope():
         text = get_horoscope_by_sign(sign)
         try:
             text = ia.transform_horoscope_text(text)
-        except:
-            pass
+        except Exception as err:
+            print(traceback.format_exc(), file = sys.stderr )
         horoscope +=  f'<div><h3>{sign}</h3>'
         horoscope += f'<p>{text}</p></div>'
 
