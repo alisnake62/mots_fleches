@@ -11,10 +11,10 @@ history.json
 
 # notre journal
 index.html
-crabgrass.png
-pickles.png
-central.png
-verso.png
+crabgrass*.png
+pickles*.png
+central*.png
+verso*.png
 
 # Distribution / packaging
 .Python
