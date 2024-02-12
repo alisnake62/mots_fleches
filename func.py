@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 import locale
 import os
 
-logo_path = '3.png'
+logo_path = 'static/3.png'
 
 options = FirefoxOptions()
 options.add_argument("--headless")
@@ -142,7 +142,8 @@ def get_horoscope():
     return horoscope
 
 def get_daily_strip(input_date, comic):
-    date = datetime.datetime.strptime(input_date, "%d%m%Y") 
+    date = datetime.datetime.strptime(input_date, "%d%m%Y")
+    mots_fleches_id = get_game_id(date)
     formatted_date = date.strftime("%Y/%m/%d")
 
     url = f'https://www.gocomics.com/{comic}/{formatted_date}'
@@ -162,7 +163,7 @@ def get_daily_strip(input_date, comic):
 
             if image_response.status_code == 200:
                 # Enregistrer l'image localement
-                with open(f'html/{comic}.png', 'wb') as f:
+                with open(f'html/{comic}_{mots_fleches_id}.png', 'wb') as f:
                     f.write(image_response.content)
 
                 print(f"Le daily strip '{comic}' a été téléchargé avec succès.")
@@ -210,11 +211,11 @@ def teleprendre_image(date, folder, filename):
         print(f"Échec du téléchargement du fichier")
 
 def get_central_picture(mots_fleches_id):
-    teleprendre_image(mots_fleches_id, "3min_photos", "central")
+    teleprendre_image(mots_fleches_id, "3min_photos", f"central_{mots_fleches_id}")
 
 
 def get_verso_picture(mots_fleches_id):
-    teleprendre_image(mots_fleches_id, "3min_photos_verso", "verso")
+    teleprendre_image(mots_fleches_id, "3min_photos_verso", f"verso_{mots_fleches_id}")
 
 def get_full_3mn(mots_fleches_id, pic_path= logo_path, pic_path_verso= "", comic_list=[]):
 
@@ -231,12 +232,12 @@ def get_full_3mn(mots_fleches_id, pic_path= logo_path, pic_path_verso= "", comic
     horoscope = get_horoscope()
 
     #verso
-    verso = f'<img class="images" src="verso.png"/>'
+    verso = f'<img class="images" src="verso_{mots_fleches_id}.png"/>'
 
     #comics
     comics = ""
     for i in comic_list:
-        comics += f'<img class="images" src="{i}.png"/>'
+        comics += f'<img class="images" src="{i}_{mots_fleches_id}.png"/>'
 
     # journal complet
     return f"""
@@ -246,7 +247,7 @@ def get_full_3mn(mots_fleches_id, pic_path= logo_path, pic_path_verso= "", comic
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>3mn</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="static/style.css">
     </head>
     <body>
         <div class="page">

@@ -10,10 +10,13 @@ args = sys.argv
 # Créez un objet ArgumentParser
 parser = argparse.ArgumentParser(description="Description de votre script")
 
+default_date = datetime.datetime.today().strftime("%d%m%Y")
+default_mots_fleches_id = get_game_id(default_date)
+
 # Ajoutez des arguments en spécifiant leurs noms et des valeurs par défaut
-parser.add_argument('--date_mots_fleches', type=str, default=datetime.datetime.today().strftime("%d%m%Y"), help="date au format ddmmyyyy")
-parser.add_argument('--date_comic', type=str, default=datetime.datetime.today().strftime("%d%m%Y"), help="date au format ddmmyyyy")
-parser.add_argument('--pic_path', type=str, default='central.png', help="chemin de la photo centrale des mots fleches")
+parser.add_argument('--date_mots_fleches', type=str, default=default_date, help="date au format ddmmyyyy")
+parser.add_argument('--date_comic', type=str, default=default_date, help="date au format ddmmyyyy")
+parser.add_argument('--pic_path', type=str, default=f'central_{default_mots_fleches_id}.png', help="chemin de la photo centrale des mots fleches")
 parser.add_argument('--pic_path_verso', type=str, default='verso.png', help="chemin de la photo verso")
 parser.add_argument('--comics', nargs='+', default=[], help="liste des comics à afficher")
 
