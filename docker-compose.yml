@@ -13,6 +13,7 @@ services:
       APP_MODE: normal
       NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}
       CENTRAL_PICTURE_ONLY: ${CENTRAL_PICTURE_ONLY}
+      OPEN_API_KEY: ${OPEN_API_KEY}
     volumes:
       - .:/usr/src/app
 

@@ -9,6 +9,7 @@ import requests
 from bs4 import BeautifulSoup
 import locale
 import os
+from openai import OpenAI
 
 logo_path = 'static/3.png'
 
@@ -130,10 +131,38 @@ def get_horoscope_by_sign(sign):
     
     return ""
 
+class IAClient:
+
+    def __init__(self) -> None:
+        api_key = os.getenv('OPEN_API_KEY')
+        self.client = OpenAI(api_key=api_key)
+
+    def transform_horoscope_text(self, text):
+        with open("horoscope_ia_prompt.txt", 'r') as file:
+            prompt = file.read()
+        completion = self.client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": prompt},
+                {"role": "user", "content": text}
+            ]
+        )
+
+        return completion.choices[0].message.content
+
 def get_horoscope():
+    print(f"Téléchargement de l'horoscope")
     horoscope = '<div class="horoscope" style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr))">'
+
+    ia = IAClient()
+
     for sign in horoscope_signs:
+
         text = get_horoscope_by_sign(sign)
+        try:
+            text = ia.transform_horoscope_text(text)
+        except:
+            pass
         horoscope +=  f'<div><h3>{sign}</h3>'
         horoscope += f'<p>{text}</p></div>'
 
