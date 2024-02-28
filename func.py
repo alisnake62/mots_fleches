@@ -12,6 +12,8 @@ import os
 from openai import OpenAI
 import traceback
 import sys
+import json
+import random
 
 logo_path = 'static/3.png'
 
@@ -19,6 +21,53 @@ options = FirefoxOptions()
 options.add_argument("--headless")
 
 horoscope_signs = ["belier", "taureau", "gemeaux", "cancer", "lion", "vierge", "balance", "scorpion", "sagittaire", "capricorne", "verseau", "poissons"]
+
+nextcloud_password = os.getenv('NEXTCLOUD_ADMIN_PASSWORD', "toto")
+nextcloud_host = "http://monappli.ovh:8889"
+nextcloud_username = "admin"
+nextcloud_url = f"{nextcloud_host}/remote.php/dav/files/{nextcloud_username}"
+
+# Définissez les en-têtes d'authentification pour Nextcloud
+auth = (nextcloud_username, nextcloud_password)
+
+def generer_nombre_unique():
+    # Charger l'array depuis le fichier Nextcloud
+    fichier_nextcloud = f"{nextcloud_url}/3min_photos/ng_index.json"
+
+    # Effectuer une requête HTTP pour obtenir les données actuelles
+    response = requests.get(fichier_nextcloud, auth=auth)
+
+    # Vérifier si la requête a réussi (code de statut 200)
+    if response.status_code == 200:
+        # Charger les données depuis la réponse JSON
+        donnees = response.json()
+    else:
+        print(response)
+        print("Erreur lors de la récupération des données depuis Nextcloud.")
+        return None
+
+    if len(donnees) == 1294:
+        return None
+
+    # Générer un nombre aléatoire unique entre 1 et 1200
+    nombre_aleatoire = random.randint(1, 1294)
+    while nombre_aleatoire in donnees:
+        nombre_aleatoire = random.randint(1, 1294)
+
+    # Ajouter le nombre aléatoire à l'array
+    donnees.append(nombre_aleatoire)
+
+    # Enregistrer les données mises à jour dans le fichier Nextcloud
+    response = requests.put(fichier_nextcloud, json=donnees, auth=auth)
+
+    # Vérifier si la requête de mise à jour a réussi
+    if response.status_code == 204:
+        print("Données mises à jour avec succès sur Nextcloud.")
+        return nombre_aleatoire
+    else:
+        print(response)
+        print("Erreur lors de la mise à jour des données sur Nextcloud.")
+        return None
 
 def find_between( s, first, last ):
     try:
@@ -77,11 +126,11 @@ def replace_images(soup, image1=logo_path, image2=logo_path):
 
     return soup
 
-def generate_3mn_mf_from_raw(page_source, force, pic_path=logo_path):
+def generate_3mn_mf_from_raw(page_source, force, pic_path):
     # Utiliser BeautifulSoup pour analyser le HTML de la page
     soup = BeautifulSoup(page_source, "html.parser")
 
-    soup = replace_images(soup, pic_path)
+    soup = replace_images(soup, pic_path, logo_path)
     first_svg = soup.find("svg")
 
     if first_svg.get("height"):
@@ -174,8 +223,8 @@ def get_horoscope():
 
 def get_daily_strip(input_date, comic):
     date = datetime.datetime.strptime(input_date, "%d%m%Y")
-    mots_fleches_id = get_game_id(date)
     formatted_date = date.strftime("%Y/%m/%d")
+    mots_fleches_id = get_game_id(input_date)
 
     url = f'https://www.gocomics.com/{comic}/{formatted_date}'
 
@@ -194,7 +243,7 @@ def get_daily_strip(input_date, comic):
 
             if image_response.status_code == 200:
                 # Enregistrer l'image localement
-                with open(f'html/{comic}_{mots_fleches_id}.png', 'wb') as f:
+                with open(f'html/verso_{mots_fleches_id}.png', 'wb') as f:
                     f.write(image_response.content)
 
                 print(f"Le daily strip '{comic}' a été téléchargé avec succès.")
@@ -205,50 +254,73 @@ def get_daily_strip(input_date, comic):
     else:
         print("Impossible de récupérer la page web.")
 
+def teleprendre_national_geographic(index, filename):
+    # Charger le fichier JSON
+    print("national geo")
+    with open("national_geographic.json", 'r') as fichier:
+        donnees = json.load(fichier)
+
+    # Vérifier si l'index est valide
+    if 0 <= index < len(donnees):
+        # Retourner l'objet correspondant à l'index
+        img = donnees[index]
+        print(f"Essai de téléprendre ng '{img}'")
+        response = requests.get(img['img'], auth=auth)
+        if response.status_code == 200:
+            # Enregistrez le contenu du fichier téléchargé localement
+             with open(f"html/{filename}.png", "wb") as f:
+                f.write(response.content)
+                print(f"Le fichier {img['img']} a été téléchargé avec succès.")
+                return img['txt']
+
+    else:
+        print("Index invalide. L'index doit être compris entre 0 et {}.".format(len(donnees) - 1))
+        return None
+
 def teleprendre_image(date, folder, filename):
-
-    nextcloud_password = os.getenv('NEXTCLOUD_ADMIN_PASSWORD', "toto")
-    nextcloud_host = "http://monappli.ovh:8889"
-    nextcloud_username = "admin"
-    nextcloud_url = f"{nextcloud_host}/remote.php/dav/files/{nextcloud_username}"
-
-    # Définissez les en-têtes d'authentification pour Nextcloud
-    auth = (nextcloud_username, nextcloud_password)
-
     extensions = ["png", "jpg", "PNG", "JPG"]
 
     # Effectuez la demande HTTP pour télécharger le fichier
-    try:
-        is_downloaded = False
-        for file_title in [date, "default"]:
-            for extension in extensions:
-                file_name = f"{file_title}.{extension}"
-                download_url = f"{nextcloud_url}/{folder}/{file_name}"
+    is_downloaded = False
+    file_title = date
+    for extension in extensions:
+        file_name = f"{file_title}.{extension}"
+        download_url = f"{nextcloud_url}/{folder}/{file_name}"
 
-                print(f"Essai de téléprendre '{file_name}'")
-                response = requests.get(download_url, auth=auth)
-                if response.status_code == 200:
-                    # Enregistrez le contenu du fichier téléchargé localement
-                    with open(f"html/{filename}.png", "wb") as f:
-                        f.write(response.content)
-                    is_downloaded = True
-                    print(f"Le fichier {file_name} a été téléchargé avec succès.")
-                    break
-            if is_downloaded:
+        print(f"Essai de téléprendre '{file_name}'")
+        response = requests.get(download_url, auth=auth)
+        if response.status_code == 200:
+        # Enregistrez le contenu du fichier téléchargé localement
+            with open(f"html/{filename}.png", "wb") as f:
+                f.write(response.content)
+            is_downloaded = True
+            print(f"Le fichier {file_name} a été téléchargé avec succès.")
+            break
+        if is_downloaded:
                 break
-        if not is_downloaded:
-            raise Exception()
-    except:
-        print(f"Échec du téléchargement du fichier")
+    if not is_downloaded:
+        print('Échec du téléchargement du fichier')
+        raise Exception("error")
 
 def get_central_picture(mots_fleches_id):
-    teleprendre_image(mots_fleches_id, "3min_photos", f"central_{mots_fleches_id}")
-
+    try:
+        teleprendre_image(mots_fleches_id, "3min_photos", f"central_{mots_fleches_id}")
+        return ""
+    except:
+        index = generer_nombre_unique()
+        txt = teleprendre_national_geographic(index, f"central_{mots_fleches_id}")
+        return txt
 
 def get_verso_picture(mots_fleches_id):
-    teleprendre_image(mots_fleches_id, "3min_photos_verso", f"verso_{mots_fleches_id}")
+    try:
+        teleprendre_image(mots_fleches_id, "3min_photos_verso", f"verso_{mots_fleches_id}")
+    except:
+        print('teleprendre comics')
+        default_date = datetime.datetime.today().strftime("%d%m%Y")
+        get_daily_strip(default_date, 'pickles')
 
-def get_full_3mn(mots_fleches_id, pic_path= logo_path, pic_path_verso= "", comic_list=[]):
+
+def get_full_3mn(mots_fleches_id, pic_path, img_legend= ""):
 
     #date
     locale.setlocale(locale.LC_TIME,'')
@@ -265,11 +337,6 @@ def get_full_3mn(mots_fleches_id, pic_path= logo_path, pic_path_verso= "", comic
     #verso
     verso = f'<img class="images" src="verso_{mots_fleches_id}.png"/>'
 
-    #comics
-    comics = ""
-    for i in comic_list:
-        comics += f'<img class="images" src="{i}_{mots_fleches_id}.png"/>'
-
     # journal complet
     return f"""
     <!DOCTYPE html>
@@ -284,13 +351,13 @@ def get_full_3mn(mots_fleches_id, pic_path= logo_path, pic_path_verso= "", comic
         <div class="page">
             <em>3mn - Edition du {date_str} - Tirage : 1<em>
             {mf_3mn}
+            <div class="img_legend">{img_legend}</div>
             <em>S'il te reste un peu de temps, n'oublie pas de regarder ton horoscope au verso!</em>
         </div>
         <div class="page">
             <img src={logo_path} height="100px" width="100px">
             {horoscope}
             {verso}
-            {comics}
         </div>
     </body>
     </html>
