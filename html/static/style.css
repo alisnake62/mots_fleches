@@ -5,6 +5,7 @@ body {
 .images {
     margin-top: 50px;
     max-width: 95vw;
+    max-height: 350px;
 }
 
 .page {
@@ -16,6 +17,12 @@ body {
 
 .horoscope > div {
     margin-right: 7px
+}
+
+.img_legend {
+    font-size: 12px;
+    font-style: normal;
+    margin-bottom: 7px;
 }
 
 /*  /*  /*  /*  /*  /*  /*
