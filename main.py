@@ -2,6 +2,7 @@ from func import get_full_3mn, get_central_picture, get_verso_picture, get_game_
 
 import sys
 import datetime
+import os
 
 args = sys.argv
 
@@ -13,7 +14,9 @@ pic_path = f'central_{mots_fleches_id}.png'
 img_txt = get_central_picture(mots_fleches_id)
 get_verso_picture(mots_fleches_id)
 
-full_3mn = get_full_3mn(mots_fleches_id, pic_path, img_txt)
+central_picture_only = os.getenv("CENTRAL_PICTURE_ONLY", "0")
+if central_picture_only != '1':
+    full_3mn = get_full_3mn(mots_fleches_id, args.pic_path, args.pic_path_verso, args.comics)
 
 with open("html/index.html", "w", encoding="utf-8") as file:
     file.write(full_3mn)
