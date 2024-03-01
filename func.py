@@ -254,7 +254,7 @@ def get_daily_strip(input_date, comic):
     else:
         print("Impossible de récupérer la page web.")
 
-def teleprendre_national_geographic(index, filename):
+def teleprendre_national_geographic(index, filename, date):
     # Charger le fichier JSON
     print("national geo")
     with open("national_geographic.json", 'r') as fichier:
@@ -267,11 +267,17 @@ def teleprendre_national_geographic(index, filename):
         print(f"Essai de téléprendre ng '{img}'")
         response = requests.get(img['img'], auth=auth)
         if response.status_code == 200:
+
             # Enregistrez le contenu du fichier téléchargé localement
-             with open(f"html/{filename}.png", "wb") as f:
+            with open(f"html/{filename}.png", "wb") as f:
                 f.write(response.content)
                 print(f"Le fichier {img['img']} a été téléchargé avec succès.")
-                return img['txt']
+
+            # Lecture du fichier local
+            with open(f"html/{filename}.png", 'rb') as file:
+                    file_content = file.read()
+                    fichier_nextcloud = f"{nextcloud_url}/3min_photos/{date}.png"
+                    requests.put(fichier_nextcloud, data=file_content, auth=auth)
 
     else:
         print("Index invalide. L'index doit être compris entre 0 et {}.".format(len(donnees) - 1))
@@ -305,11 +311,8 @@ def teleprendre_image(date, folder, filename):
 def get_central_picture(mots_fleches_id):
     try:
         teleprendre_image(mots_fleches_id, "3min_photos", f"central_{mots_fleches_id}")
-        return ""
     except:
-        index = generer_nombre_unique()
-        txt = teleprendre_national_geographic(index, f"central_{mots_fleches_id}")
-        return txt
+        teleprendre_image("default", "3min_photos", f"central_{mots_fleches_id}")
 
 def get_verso_picture(mots_fleches_id):
     try:
@@ -317,10 +320,10 @@ def get_verso_picture(mots_fleches_id):
     except:
         print('teleprendre comics')
         default_date = datetime.datetime.today().strftime("%d%m%Y")
-        get_daily_strip(default_date, 'pickles')
+        get_daily_strip(default_date, 'calvinandhobbes')
 
 
-def get_full_3mn(mots_fleches_id, pic_path, img_legend= ""):
+def get_full_3mn(mots_fleches_id, pic_path):
 
     #date
     locale.setlocale(locale.LC_TIME,'')
@@ -351,7 +354,6 @@ def get_full_3mn(mots_fleches_id, pic_path, img_legend= ""):
         <div class="page">
             <em>3mn - Edition du {date_str} - Tirage : 1<em>
             {mf_3mn}
-            <div class="img_legend">{img_legend}</div>
             <em>S'il te reste un peu de temps, n'oublie pas de regarder ton horoscope au verso!</em>
         </div>
         <div class="page">
