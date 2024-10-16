@@ -201,6 +201,18 @@ class IAClient:
 
         return completion.choices[0].message.content
 
+    def get_gorafi_text(self):
+        with open("gorafi_ia_prompt.txt", 'r') as file:
+            prompt = file.read()
+        completion = self.client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": prompt},
+            ]
+        )
+
+        return completion.choices[0].message.content
+
 def get_horoscope():
     print(f"Téléchargement de l'horoscope")
     horoscope = '<div class="horoscope" style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr))">'
@@ -221,67 +233,72 @@ def get_horoscope():
 
     return horoscope
 
-def get_daily_strip(input_date, comic):
-    date = datetime.datetime.strptime(input_date, "%d%m%Y")
-    formatted_date = date.strftime("%Y/%m/%d")
-    mots_fleches_id = get_game_id(input_date)
+def get_gorafi():
+    print(f"Téléchargement du Gorafi")
+    ia = IAClient()
+    return ia.get_gorafi_text()
 
-    url = f'https://www.gocomics.com/{comic}/{formatted_date}'
+# def get_daily_strip(input_date, comic):
+#     date = datetime.datetime.strptime(input_date, "%d%m%Y")
+#     formatted_date = date.strftime("%Y/%m/%d")
+#     mots_fleches_id = get_game_id(input_date)
 
-    response = requests.get(url)
+#     url = f'https://www.gocomics.com/{comic}/{formatted_date}'
 
-    if response.status_code == 200:
-        soup = BeautifulSoup(response.content, 'html.parser')
+#     response = requests.get(url)
 
-        strip_element = soup.find('picture', class_='item-comic-image')  
+#     if response.status_code == 200:
+#         soup = BeautifulSoup(response.content, 'html.parser')
 
-        if strip_element:
-            image_url = strip_element.find('img')['src']
+#         strip_element = soup.find('picture', class_='item-comic-image')  
 
-            # Télécharger l'image
-            image_response = requests.get(image_url)
+#         if strip_element:
+#             image_url = strip_element.find('img')['src']
 
-            if image_response.status_code == 200:
-                # Enregistrer l'image localement
-                with open(f'html/verso_{mots_fleches_id}.png', 'wb') as f:
-                    f.write(image_response.content)
+#             # Télécharger l'image
+#             image_response = requests.get(image_url)
 
-                print(f"Le daily strip '{comic}' a été téléchargé avec succès.")
-            else:
-                print("Impossible de télécharger l'image du daily strip.")
-        else:
-            print("Élément du daily strip non trouvé.")
-    else:
-        print("Impossible de récupérer la page web.")
+#             if image_response.status_code == 200:
+#                 # Enregistrer l'image localement
+#                 with open(f'html/verso_{mots_fleches_id}.png', 'wb') as f:
+#                     f.write(image_response.content)
 
-def teleprendre_national_geographic(index, filename, date):
-    # Charger le fichier JSON
-    print("national geo")
-    with open("national_geographic.json", 'r') as fichier:
-        donnees = json.load(fichier)
+#                 print(f"Le daily strip '{comic}' a été téléchargé avec succès.")
+#             else:
+#                 print("Impossible de télécharger l'image du daily strip.")
+#         else:
+#             print("Élément du daily strip non trouvé.")
+#     else:
+#         print("Impossible de récupérer la page web.")
 
-    # Vérifier si l'index est valide
-    if 0 <= index < len(donnees):
-        # Retourner l'objet correspondant à l'index
-        img = donnees[index]
-        print(f"Essai de téléprendre ng '{img}'")
-        response = requests.get(img['img'], auth=auth)
-        if response.status_code == 200:
+# def teleprendre_national_geographic(index, filename, date):
+#     # Charger le fichier JSON
+#     print("national geo")
+#     with open("national_geographic.json", 'r') as fichier:
+#         donnees = json.load(fichier)
 
-            # Enregistrez le contenu du fichier téléchargé localement
-            with open(f"html/{filename}.png", "wb") as f:
-                f.write(response.content)
-                print(f"Le fichier {img['img']} a été téléchargé avec succès.")
+#     # Vérifier si l'index est valide
+#     if 0 <= index < len(donnees):
+#         # Retourner l'objet correspondant à l'index
+#         img = donnees[index]
+#         print(f"Essai de téléprendre ng '{img}'")
+#         response = requests.get(img['img'], auth=auth)
+#         if response.status_code == 200:
 
-            # Lecture du fichier local
-            with open(f"html/{filename}.png", 'rb') as file:
-                    file_content = file.read()
-                    fichier_nextcloud = f"{nextcloud_url}/3min_photos/{date}.png"
-                    requests.put(fichier_nextcloud, data=file_content, auth=auth)
+#             # Enregistrez le contenu du fichier téléchargé localement
+#             with open(f"html/{filename}.png", "wb") as f:
+#                 f.write(response.content)
+#                 print(f"Le fichier {img['img']} a été téléchargé avec succès.")
 
-    else:
-        print("Index invalide. L'index doit être compris entre 0 et {}.".format(len(donnees) - 1))
-        return None
+#             # Lecture du fichier local
+#             with open(f"html/{filename}.png", 'rb') as file:
+#                     file_content = file.read()
+#                     fichier_nextcloud = f"{nextcloud_url}/3min_photos/{date}.png"
+#                     requests.put(fichier_nextcloud, data=file_content, auth=auth)
+
+#     else:
+#         print("Index invalide. L'index doit être compris entre 0 et {}.".format(len(donnees) - 1))
+#         return None
 
 def teleprendre_image(date, folder, filename):
     extensions = ["png", "jpg", "PNG", "JPG"]
@@ -314,13 +331,13 @@ def get_central_picture(mots_fleches_id):
     except:
         teleprendre_image("default", "3min_photos", f"central_{mots_fleches_id}")
 
-def get_verso_picture(mots_fleches_id):
-    try:
-        teleprendre_image(mots_fleches_id, "3min_photos_verso", f"verso_{mots_fleches_id}")
-    except:
-        print('teleprendre comics')
-        default_date = datetime.datetime.today().strftime("%d%m%Y")
-        get_daily_strip(default_date, 'calvinandhobbes')
+# def get_verso_picture(mots_fleches_id):
+#     try:
+#         teleprendre_image(mots_fleches_id, "3min_photos_verso", f"verso_{mots_fleches_id}")
+#     except:
+#         print('teleprendre comics')
+#         default_date = datetime.datetime.today().strftime("%d%m%Y")
+#         get_daily_strip(default_date, 'calvinandhobbes')
 
 
 def get_full_3mn(mots_fleches_id, pic_path):
@@ -337,8 +354,11 @@ def get_full_3mn(mots_fleches_id, pic_path):
     #horoscope
     horoscope = get_horoscope()
 
-    #verso
-    verso = f'<img class="images" src="verso_{mots_fleches_id}.png"/>'
+    #gorafi
+    gorafi = get_gorafi()
+
+    # #verso
+    # verso = f'<img class="images" src="verso_{mots_fleches_id}.png"/>'
 
     # journal complet
     return f"""
@@ -359,7 +379,12 @@ def get_full_3mn(mots_fleches_id, pic_path):
         <div class="page">
             <img src={logo_path} height="100px" width="100px">
             {horoscope}
-            {verso}
+            <h2>
+            Breaking News
+            </h2>
+            <p>
+            {gorafi}
+            </p>
         </div>
     </body>
     </html>
