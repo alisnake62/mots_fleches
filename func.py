@@ -339,6 +339,14 @@ def get_central_picture(mots_fleches_id):
 #         default_date = datetime.datetime.today().strftime("%d%m%Y")
 #         get_daily_strip(default_date, 'calvinandhobbes')
 
+def is_verso_picture(mots_fleches_id):
+    try:
+        teleprendre_image(mots_fleches_id, "3min_photos_verso", f"verso_{mots_fleches_id}")
+        return True
+    except:
+        print('no verso picture bro')
+        return False
+
 
 def get_full_3mn(mots_fleches_id, pic_path):
 
@@ -354,8 +362,15 @@ def get_full_3mn(mots_fleches_id, pic_path):
     #horoscope
     horoscope = get_horoscope()
 
+    verso = ''
+    #verso pic or gorafi, that is the question
+    if (is_verso_picture(mots_fleches_id)):
+        verso = f'<img class="images" src="verso_{mots_fleches_id}.png"/>'
+    else:
+        verso = get_gorafi()
+    
     #gorafi
-    gorafi = get_gorafi()
+    #gorafi = get_gorafi()
 
     # #verso
     # verso = f'<img class="images" src="verso_{mots_fleches_id}.png"/>'
@@ -383,7 +398,7 @@ def get_full_3mn(mots_fleches_id, pic_path):
             Breaking News
             </h2>
             <p>
-            {gorafi}
+            {verso}
             </p>
         </div>
     </body>
