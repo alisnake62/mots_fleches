@@ -1,4 +1,4 @@
-from func import get_full_3mn, get_central_picture, get_game_id
+from func import get_full_3mn, get_central_picture, get_game_id, is_verso_picture
 
 import sys
 import datetime
@@ -12,6 +12,7 @@ pic_path = f'central_{mots_fleches_id}.png'
 
 # get pictures
 img_txt = get_central_picture(mots_fleches_id)
+is_verso_picture(mots_fleches_id)
 # get_verso_picture(mots_fleches_id)
 
 print(str(datetime.datetime.now()))
