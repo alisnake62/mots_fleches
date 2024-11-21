@@ -12,8 +12,10 @@ pic_path = f'central_{mots_fleches_id}.png'
 
 # get pictures
 img_txt = get_central_picture(mots_fleches_id)
-is_verso_picture(mots_fleches_id)
-# get_verso_picture(mots_fleches_id)
+
+if (is_verso_picture(mots_fleches_id)):
+    with open("html/verso.html", "w") as f:
+        f.write(f'<img class="images" src="verso_{mots_fleches_id}.png"/>')
 
 print(str(datetime.datetime.now()))
 
