@@ -15,6 +15,7 @@ crabgrass*.png
 pickles*.png
 central*.png
 verso*.png
+verso.html
 
 # Distribution / packaging
 .Python

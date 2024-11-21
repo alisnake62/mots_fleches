@@ -238,68 +238,6 @@ def get_gorafi():
     ia = IAClient()
     return ia.get_gorafi_text()
 
-# def get_daily_strip(input_date, comic):
-#     date = datetime.datetime.strptime(input_date, "%d%m%Y")
-#     formatted_date = date.strftime("%Y/%m/%d")
-#     mots_fleches_id = get_game_id(input_date)
-
-#     url = f'https://www.gocomics.com/{comic}/{formatted_date}'
-
-#     response = requests.get(url)
-
-#     if response.status_code == 200:
-#         soup = BeautifulSoup(response.content, 'html.parser')
-
-#         strip_element = soup.find('picture', class_='item-comic-image')  
-
-#         if strip_element:
-#             image_url = strip_element.find('img')['src']
-
-#             # Télécharger l'image
-#             image_response = requests.get(image_url)
-
-#             if image_response.status_code == 200:
-#                 # Enregistrer l'image localement
-#                 with open(f'html/verso_{mots_fleches_id}.png', 'wb') as f:
-#                     f.write(image_response.content)
-
-#                 print(f"Le daily strip '{comic}' a été téléchargé avec succès.")
-#             else:
-#                 print("Impossible de télécharger l'image du daily strip.")
-#         else:
-#             print("Élément du daily strip non trouvé.")
-#     else:
-#         print("Impossible de récupérer la page web.")
-
-# def teleprendre_national_geographic(index, filename, date):
-#     # Charger le fichier JSON
-#     print("national geo")
-#     with open("national_geographic.json", 'r') as fichier:
-#         donnees = json.load(fichier)
-
-#     # Vérifier si l'index est valide
-#     if 0 <= index < len(donnees):
-#         # Retourner l'objet correspondant à l'index
-#         img = donnees[index]
-#         print(f"Essai de téléprendre ng '{img}'")
-#         response = requests.get(img['img'], auth=auth)
-#         if response.status_code == 200:
-
-#             # Enregistrez le contenu du fichier téléchargé localement
-#             with open(f"html/{filename}.png", "wb") as f:
-#                 f.write(response.content)
-#                 print(f"Le fichier {img['img']} a été téléchargé avec succès.")
-
-#             # Lecture du fichier local
-#             with open(f"html/{filename}.png", 'rb') as file:
-#                     file_content = file.read()
-#                     fichier_nextcloud = f"{nextcloud_url}/3min_photos/{date}.png"
-#                     requests.put(fichier_nextcloud, data=file_content, auth=auth)
-
-#     else:
-#         print("Index invalide. L'index doit être compris entre 0 et {}.".format(len(donnees) - 1))
-#         return None
-
 def teleprendre_image(date, folder, filename):
     extensions = ["png", "jpg", "PNG", "JPG"]
 
@@ -331,14 +269,6 @@ def get_central_picture(mots_fleches_id):
     except:
         teleprendre_image("default", "3min_photos", f"central_{mots_fleches_id}")
 
-# def get_verso_picture(mots_fleches_id):
-#     try:
-#         teleprendre_image(mots_fleches_id, "3min_photos_verso", f"verso_{mots_fleches_id}")
-#     except:
-#         print('teleprendre comics')
-#         default_date = datetime.datetime.today().strftime("%d%m%Y")
-#         get_daily_strip(default_date, 'calvinandhobbes')
-
 def is_verso_picture(mots_fleches_id):
     try:
         teleprendre_image(mots_fleches_id, "3min_photos_verso", f"verso_{mots_fleches_id}")
@@ -365,15 +295,12 @@ def get_full_3mn(mots_fleches_id, pic_path):
     verso = ''
     #verso pic or gorafi, that is the question
     if (is_verso_picture(mots_fleches_id)):
-        verso = f'<img class="images" src="verso_{mots_fleches_id}.png"/>'
+        with open("html/verso.html", "w") as f:
+            f.write(f'<img class="images" src="verso_{mots_fleches_id}.png"/>')
     else:
         verso = get_gorafi()
-    
-    #gorafi
-    #gorafi = get_gorafi()
-
-    # #verso
-    # verso = f'<img class="images" src="verso_{mots_fleches_id}.png"/>'
+        with open("html/verso.html", "w") as f:
+            f.write(verso)
 
     # journal complet
     return f"""
@@ -384,6 +311,7 @@ def get_full_3mn(mots_fleches_id, pic_path):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>3mn</title>
         <link rel="stylesheet" href="static/style.css">
+        <script src="https://unpkg.com/htmlincludejs"></script>
     </head>
     <body>
         <div class="page">
@@ -398,7 +326,7 @@ def get_full_3mn(mots_fleches_id, pic_path):
             Breaking News
             </h2>
             <p>
-            {verso}
+                <include src="./verso.html"></include>
             </p>
         </div>
     </body>
