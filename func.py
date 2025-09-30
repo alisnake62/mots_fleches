@@ -189,7 +189,7 @@ class IAClient:
         self.client = OpenAI(api_key=api_key)
 
     def transform_horoscope_text(self, text):
-        with open("horoscope_ia_prompt_bigard.txt", 'r') as file:
+        with open("horoscope_ia_prompt.txt", 'r') as file:
             prompt = file.read()
         completion = self.client.chat.completions.create(
             model="gpt-3.5-turbo",
