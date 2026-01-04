@@ -23,7 +23,7 @@ options.add_argument("--headless")
 horoscope_signs = ["belier", "taureau", "gemeaux", "cancer", "lion", "vierge", "balance", "scorpion", "sagittaire", "capricorne", "verseau", "poissons"]
 
 nextcloud_password = os.getenv('NEXTCLOUD_ADMIN_PASSWORD', "toto")
-nextcloud_host = "http://monappli.ovh:8889"
+nextcloud_host = os.getenv('NEXTCLOUD_HOST', "http://monappli.ovh:8889")
 nextcloud_username = "admin"
 nextcloud_url = f"{nextcloud_host}/remote.php/dav/files/{nextcloud_username}"
 
