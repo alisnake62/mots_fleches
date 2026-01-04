@@ -21,10 +21,14 @@ services:
     image: nginx:latest
     container_name: 3min_nginx
     restart: always
-    ports:
-      - "8888:80"
+    networks:
+      - proxy
     volumes:
       - ${path}/mots_fleches/html:/usr/share/nginx/html
 
 volumes:
   data:
+
+networks:
+  proxy:
+    external: true
