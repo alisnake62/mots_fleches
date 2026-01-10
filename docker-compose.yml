@@ -11,6 +11,7 @@ services:
       APP_PATH: /usr/src/app/
       APP_ENV: docker
       APP_MODE: normal
+      NEXTCLOUD_HOST: ${NEXTCLOUD_HOST}
       NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}
       NEXTCLOUD_FILES_ONLY: ${NEXTCLOUD_FILES_ONLY}
       OPEN_API_KEY: ${OPEN_API_KEY}
@@ -24,10 +25,7 @@ services:
     networks:
       - proxy
     volumes:
-      - ${path}/mots_fleches/html:/usr/share/nginx/html
-
-volumes:
-  data:
+      - ./html:/usr/share/nginx/html:ro
 
 networks:
   proxy:
