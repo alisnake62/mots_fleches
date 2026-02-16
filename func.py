@@ -22,6 +22,8 @@ options.add_argument("--headless")
 
 horoscope_signs = ["belier", "taureau", "gemeaux", "cancer", "lion", "vierge", "balance", "scorpion", "sagittaire", "capricorne", "verseau", "poissons"]
 
+game_id_year = 2023
+
 nextcloud_password = os.getenv('NEXTCLOUD_ADMIN_PASSWORD', "toto")
 nextcloud_host = os.getenv('NEXTCLOUD_HOST', "http://monappli.ovh:8889")
 nextcloud_username = "admin"
@@ -80,7 +82,7 @@ def find_between( s, first, last ):
 def get_game_id(input_date):
     input_date_mots_fleches = datetime.datetime.strptime(input_date, "%d%m%Y") 
     formated_date_mots_fleches = input_date_mots_fleches.strftime("%d%m%Y")
-    return formated_date_mots_fleches[:4] + formated_date_mots_fleches[6:]
+    return formated_date_mots_fleches[:4] + str(game_id_year)[2:]
 
 
 def get_force(game_id):
