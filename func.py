@@ -84,6 +84,11 @@ def get_game_id(input_date):
     formated_date_mots_fleches = input_date_mots_fleches.strftime("%d%m%Y")
     return formated_date_mots_fleches[:4] + str(game_id_year)[2:]
 
+def get_nextcloud_id(input_date):
+    input_date_mots_fleches = datetime.datetime.strptime(input_date, "%d%m%Y") 
+    formated_date_mots_fleches = input_date_mots_fleches.strftime("%d%m%Y")
+    return formated_date_mots_fleches[:4] + formated_date_mots_fleches[6:]
+
 
 def get_force(game_id):
     game_data_request = requests.get(f"https://rcijeux.fr/drupal_game/20minutes/grids/{game_id}.mfj")
@@ -280,11 +285,11 @@ def is_verso_picture(mots_fleches_id):
         return False
 
 
-def get_full_3mn(mots_fleches_id, pic_path):
+def get_full_3mn(nextcloud_id, mots_fleches_id, pic_path):
 
     #date
     locale.setlocale(locale.LC_TIME,'')
-    date_str = datetime.datetime.strptime(mots_fleches_id, "%d%m%y").strftime("%d %B %Y")
+    date_str = datetime.datetime.strptime(nextcloud_id, "%d%m%y").strftime("%d %B %Y")
 
     #mots fleches
     force = get_force(mots_fleches_id)
@@ -296,9 +301,9 @@ def get_full_3mn(mots_fleches_id, pic_path):
 
     verso = ''
     #verso pic or gorafi, that is the question
-    if (is_verso_picture(mots_fleches_id)):
+    if (is_verso_picture(nextcloud_id)):
         with open("html/verso.html", "w") as f:
-            f.write(f'<img class="images" src="verso_{mots_fleches_id}.png"/>')
+            f.write(f'<img class="images" src="verso_{nextcloud_id}.png"/>')
     else:
         verso = get_gorafi()
         with open("html/verso.html", "w") as f:
